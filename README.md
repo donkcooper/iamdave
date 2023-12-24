@@ -1,3 +1,9 @@
+# Sample Project to fetch data from an API and render it in a table
+
+# React Material UI
+
+This project was bootstrapped with [Material UI](https://mui.com/).
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
