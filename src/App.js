@@ -18,15 +18,13 @@ import FirstPageIcon from "@mui/icons-material/FirstPage";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import LastPageIcon from "@mui/icons-material/LastPage";
-import Skeleton from "@mui/material/Skeleton";
-import CircularProgress from "@mui/material/CircularProgress";
 
 function TablePaginationActions(props) {
   const theme = useTheme();
   const { count, page, rowsPerPage, onPageChange } = props;
 
   const handleFirstPageButtonClick = (event) => {
-    onPageChange(event, 0);
+    onPageChange(event, 1);
   };
 
   const handleBackButtonClick = (event) => {
@@ -45,14 +43,14 @@ function TablePaginationActions(props) {
     <Box sx={{ flexShrink: 0, ml: 2.5 }}>
       <IconButton
         onClick={handleFirstPageButtonClick}
-        disabled={page === 0}
+        disabled={page === 1}
         aria-label="first page"
       >
         {theme.direction === "rtl" ? <LastPageIcon /> : <FirstPageIcon />}
       </IconButton>
       <IconButton
         onClick={handleBackButtonClick}
-        disabled={page === 0}
+        disabled={page === 1}
         aria-label="previous page"
       >
         {theme.direction === "rtl" ? (
@@ -126,9 +124,10 @@ const fetchSupplierInfo = (pageNumber) => {
 };
 
 export default function App() {
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [page, setPage] = React.useState(1);
+  const [rowsPerPage, setRowsPerPage] = React.useState(50);
   const [rows, setRow] = React.useState([]);
+  const [suppInfo, setSuppInfo] = React.useState({});
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
@@ -136,29 +135,25 @@ export default function App() {
 
   const handleChangePage = (event, newPage) => {
     console.log("handleChangePage");
-    fetchSupplierInfo(2)
-      .then((res) => res.json())
-      .then((suppliers) => {
-        console.log("data", suppliers);
-        setRow(suppliers.data);
-      });
     setPage(newPage);
   };
 
   const handleChangeRowsPerPage = (event) => {
-    console.log("handleChangeRowsPerPage");
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+    console.log("handleChangeRowsPerPage", parseInt(event.target.value, 10));
+    // setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(1);
   };
 
   React.useEffect(() => {
-    fetchSupplierInfo(1)
+    fetchSupplierInfo(page)
       .then((res) => res.json())
       .then((suppliers) => {
         console.log("data", suppliers);
         setRow(suppliers.data);
+        setSuppInfo(suppliers);
+        // setRowsPerPage(suppliers.page_size);
       });
-  }, []);
+  }, [page]);
 
   return (
     <Box>
@@ -177,13 +172,14 @@ export default function App() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {(rowsPerPage > 0
+              {/* {(rowsPerPage > 0
                 ? rows.slice(
                     page * rowsPerPage,
                     page * rowsPerPage + rowsPerPage
                   )
                 : rows
-              ).map((row, index) => (
+              )*/}
+              {rows.map((row, index) => (
                 <StyledTableRow key={index}>
                   <TableCell component="th" scope="row">
                     {row.category}
@@ -202,31 +198,15 @@ export default function App() {
                   </TableCell>
                 </StyledTableRow>
               ))}
-              {emptyRows > 0 && (
-                <TableRow style={{ height: 53 * emptyRows }}>
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
             </TableBody>
             {rows.length > 0 && (
               <TableFooter>
                 <TableRow>
                   <TablePagination
-                    rowsPerPageOptions={[
-                      5,
-                      10,
-                      25,
-                      { label: "All", value: -1 },
-                    ]}
-                    count={rows.length}
+                    rowsPerPageOptions={[50]}
+                    count={suppInfo.total_number}
                     rowsPerPage={rowsPerPage}
                     page={page}
-                    SelectProps={{
-                      inputProps: {
-                        "aria-label": "rows per page",
-                      },
-                      native: true,
-                    }}
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
                     ActionsComponent={TablePaginationActions}
